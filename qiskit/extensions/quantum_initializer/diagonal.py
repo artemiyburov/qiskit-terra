@@ -69,14 +69,16 @@ class DiagonalGate(UnitaryGate, metaclass=DiagonalMeta):
             if not np.abs(z) - 1 < _EPS:
                 raise QiskitError("A diagonal entry has not absolute value one.")
         # Create unitary from diagonal
-        data = np.diag(diag)
+        data = np.array(np.diag(diag),dtype=complex)
+        # Cast numpy array to list of lists
+        data = data.tolist()
         # Create new gate.
         super().__init__(data)
 
     def _dec_diag(self):
         """
         Call to create a circuit implementing the diagonal gate.
-        Deprecated method
+        Deprecated method.
         """
         q = QuantumRegister(self.num_qubits)
         circuit = QuantumCircuit(q)
