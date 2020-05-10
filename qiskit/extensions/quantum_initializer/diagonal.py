@@ -27,7 +27,7 @@ import math
 
 import numpy as np
 
-from qiskit.circuit import Gate
+from qiskit.extensions.unitary import UnitaryGate
 from qiskit.circuit.quantumcircuit import QuantumCircuit, QuantumRegister
 from qiskit.exceptions import QiskitError
 
@@ -44,7 +44,7 @@ class DiagonalMeta(type):
         return type(inst) in {DiagonalGate, DiagGate}  # pylint: disable=unidiomatic-typecheck
 
 
-class DiagonalGate(Gate, metaclass=DiagonalMeta):
+class DiagonalGate(UnitaryGate, metaclass=DiagonalMeta):
     """
     diag =  list of the 2^k diagonal entries (for a diagonal gate on k qubits). Must contain at
     least two entries.
@@ -68,20 +68,15 @@ class DiagonalGate(Gate, metaclass=DiagonalMeta):
                                   "complex numbers.")
             if not np.abs(z) - 1 < _EPS:
                 raise QiskitError("A diagonal entry has not absolute value one.")
+        # Create unitary from diagonal
+        data = np.diag(diag)
         # Create new gate.
-        super().__init__("diagonal", int(num_action_qubits), diag)
-
-    def _define(self):
-        diag_circuit = self._dec_diag()
-        gate = diag_circuit.to_instruction()
-        q = QuantumRegister(self.num_qubits)
-        diag_circuit = QuantumCircuit(q)
-        diag_circuit.append(gate, q[:])
-        self.definition = diag_circuit.data
+        super().__init__(data)
 
     def _dec_diag(self):
         """
         Call to create a circuit implementing the diagonal gate.
+        Deprecated method
         """
         q = QuantumRegister(self.num_qubits)
         circuit = QuantumCircuit(q)
